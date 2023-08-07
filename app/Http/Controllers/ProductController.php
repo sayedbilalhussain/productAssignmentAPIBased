@@ -2,8 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\ProductCollection;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+use App\Http\Resources\ProductResource;
+use Illuminate\Support\Facades\Validator;
+
 
 class ProductController extends Controller
 {
@@ -12,7 +17,7 @@ class ProductController extends Controller
      */
     public function index()
     {
-        //
+        return new ProductCollection(Product::paginate(50));
     }
 
     /**
@@ -28,7 +33,23 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'title' => 'required|unique:posts|max:100',
+            'description' => 'required|max:100',
+            'price' => 'required|numeric',
+        ]);
+
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors(), 400]);
+        }
+
+        Product::create($request->all());
+
+        return response()->json(
+            ['message' => "success created"],
+            200
+        );
     }
 
     /**
@@ -36,7 +57,7 @@ class ProductController extends Controller
      */
     public function show(Product $product)
     {
-        //
+        return new ProductResource($product);
     }
 
     /**
@@ -52,7 +73,27 @@ class ProductController extends Controller
      */
     public function update(Request $request, Product $product)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'title' => [
+                'required',
+                'max:100',
+                Rule::unique('products')->ignore($product->id),
+            ],
+            'description' => 'required|max:100',
+            'price' => 'required|numeric',
+        ]);
+
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors(), 400]);
+        }
+
+        $product->update($request->all());
+
+        return response()->json(
+            ['message' => "success updated"],
+            200
+        );
     }
 
     /**
@@ -60,6 +101,11 @@ class ProductController extends Controller
      */
     public function destroy(Product $product)
     {
-        //
+        $product->delete();
+
+        return response()->json(
+            ['message' => "success updated"],
+            200
+        );
     }
 }
