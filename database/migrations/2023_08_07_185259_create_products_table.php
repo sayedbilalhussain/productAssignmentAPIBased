@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('title', 100)->default('');
             $table->string('description', 255)->default('');
             $table->float('price')->default(0);
+            $table->string('image_path', 255)->default(0);
             $table->timestamps();
         });
     }
