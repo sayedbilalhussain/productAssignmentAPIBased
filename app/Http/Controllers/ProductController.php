@@ -37,12 +37,20 @@ class ProductController extends Controller
             'title' => 'required|unique:posts|max:100',
             'description' => 'required|max:100',
             'price' => 'required|numeric',
+            'image' => 'required|image|mimes:png,jpg,jpeg|max:2048'
         ]);
 
 
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors(), 400]);
         }
+
+        $imageName = time() . '.' . $request->image->extension();
+
+        // Public Folder
+        $request->image->move(public_path('images'), $imageName);
+
+        $request->add(['image_path' => $imageName]);
 
         Product::create($request->all());
 
